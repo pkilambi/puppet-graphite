@@ -19,18 +19,8 @@ class graphite::config inherits graphite::params {
 
 	# we need an apache with python support
 
-	package {
-		"${::graphite::params::apache_pkg}": 
-			ensure => installed,
-			before => Exec['Chown graphite for apache'],
-			notify => Exec['Chown graphite for apache'];
-	}
-
-	package {
-		"${::graphite::params::apache_python_pkg}":
-			ensure  => installed,
-			require => Package["${::graphite::params::apache_pkg}"]
-	}
+  include apache
+  include apache::mod::python
 
 	case $::osfamily {
 		debian: {
@@ -50,15 +40,7 @@ class graphite::config inherits graphite::params {
 		}
 		default: {
 			fail("Module graphite is not supported on ${::operatingsystem}")
-      		}
-	}
-
-	service { "${::graphite::params::apache_service_name}":
-		ensure     => running,
-		enable     => true,
-		hasrestart => true,
-		hasstatus  => true,
-		require    => Exec['Chown graphite for apache'];
+    }
 	}
 
 	# first init of user db for graphite
@@ -79,6 +61,8 @@ class graphite::config inherits graphite::params {
 		cwd         => '/opt/graphite/',
 		refreshonly => true,
 		require     => Anchor['graphite::install::end'],
+    before      => Service[$::graphite::params::apache_service_name],
+    subscribe   => Package[$::graphite::params::apache_pkg],
 	}
 
 	# Deploy configfiles
