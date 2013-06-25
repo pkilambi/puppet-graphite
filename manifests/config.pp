@@ -52,7 +52,7 @@ class graphite::config inherits graphite::params {
 		notify      => Exec['Chown graphite for apache'],
 		subscribe   => Exec["Install ${::graphite::params::graphiteVersion}"],
 		before      => Exec['Chown graphite for apache'],
-        require     => File['/opt/graphite/webapp/graphite/local_settings.py']
+		require     => File['/opt/graphite/webapp/graphite/local_settings.py']
 	}
 
 	# change access permissions for apache
