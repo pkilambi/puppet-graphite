@@ -78,17 +78,6 @@ class graphite::config inherits graphite::params {
 			require => [
 				Package["${::graphite::params::apache_pkg}"],
 			];
-		"${::graphite::params::apache_dir}/ports.conf":
-			ensure  => file,
-			owner   => $::graphite::params::web_user,
-			group   => $::graphite::params::web_user,
-			mode    => '0644',
-			content => template('graphite/etc/apache2/ports.conf.erb'),
-			require => [
-				Package["${::graphite::params::apache_python_pkg}"],
-				Exec['Initial django db creation'],
-				Exec['Chown graphite for apache']
-			];
 		"${::graphite::params::apacheconf_dir}/graphite.conf":
 			ensure  => file,
 			owner   => $::graphite::params::web_user,
@@ -99,6 +88,9 @@ class graphite::config inherits graphite::params {
 				File["${::graphite::params::apache_dir}/ports.conf"],
 			];
 	}
+
+        apache::listen { $graphite::gr_apache_port: }
+        apache::namevirtualhost { "*:${graphite::gr_apache_port}": }
 
 	case $::osfamily {
 		debian: {
